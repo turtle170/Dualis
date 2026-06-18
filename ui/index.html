@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dualis Copilot</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Modern Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="app">
+      <div class="search-container">
+        <div class="logo">🟢 Dualis</div>
+        <input 
+          type="text" 
+          id="command-input" 
+          placeholder="Ask the copilot anything..." 
+          autocomplete="off" 
+          spellcheck="false"
+        />
+      </div>
+    </div>
+    <!-- Tauri API script injected securely by Tauri v2 -->
+    <script>
+      // Make sure we have access to Tauri's API functions
+      const { invoke } = window.__TAURI__.core;
+      const { getCurrentWindow } = window.__TAURI__.window;
+    </script>
+    <script src="main.js"></script>
+  </body>
+</html>

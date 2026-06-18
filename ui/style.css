@@ -1,0 +1,80 @@
+:root {
+  --bg-color: rgba(20, 20, 25, 0.7);
+  --border-color: rgba(80, 255, 120, 0.4);
+  --border-glow: rgba(80, 255, 120, 0.6);
+  --text-color: #ffffff;
+  --placeholder-color: rgba(255, 255, 255, 0.5);
+  --accent-green: rgb(100, 255, 120);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden; /* Prevent scrolling */
+  background: transparent; /* Must be transparent for Tauri to blend with desktop */
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-color);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px var(--border-glow);
+  padding: 0 20px;
+  transition: all 0.3s ease;
+}
+
+.search-container:focus-within {
+  border-color: var(--accent-green);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 25px var(--border-glow);
+  background: rgba(30, 30, 35, 0.85);
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent-green);
+  white-space: nowrap;
+  margin-right: 15px;
+  text-shadow: 0 0 10px var(--border-glow);
+}
+
+input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-color);
+  font-size: 18px;
+  font-family: 'Inter', sans-serif;
+  height: 100%;
+  padding: 10px 0;
+}
+
+input::placeholder {
+  color: var(--placeholder-color);
+  font-weight: 400;
+}
