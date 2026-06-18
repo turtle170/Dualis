@@ -1,0 +1,21 @@
+[package]
+name = "dualis"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+llama-core = "0.35.0"
+eframe = "0.29.0"
+tokio = { version = "1.36.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+windows = { version = "0.58.0", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_Graphics_Gdi",
+    "Win32_System_LibraryLoader"
+] }
+enigo = "0.6.1"
+image = "0.25.0"
+winrt-notification = "0.5.1"
