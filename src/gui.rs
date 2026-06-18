@@ -8,8 +8,7 @@ pub fn run_gui(tx: Sender<String>, gui_rx: Receiver<()>) -> eframe::Result<()> {
             .with_decorations(false)
             .with_transparent(true)
             .with_always_on_top()
-            .with_inner_size([400.0, 100.0])
-            .with_position(egui::pos2(500.0, 200.0)) // Center-ish
+            .with_inner_size([700.0, 70.0])
             .with_visible(false), // Hidden initially
         ..Default::default()
     };
@@ -40,12 +39,20 @@ impl DualisApp {
 }
 
 impl eframe::App for DualisApp {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Check if hotkey was pressed
         if let Ok(_) = self.gui_rx.try_recv() {
             self.is_visible = !self.is_visible;
             ctx.send_viewport_cmd(egui::ViewportCommand::Visible(self.is_visible));
             if self.is_visible {
+                // Position at bottom center
+                if let Some(monitor_size) = ctx.input(|i| i.viewport().monitor_size) {
+                    let window_width = 700.0;
+                    let window_height = 70.0;
+                    let x = (monitor_size.x - window_width) / 2.0;
+                    let y = monitor_size.y - window_height - 60.0; // 60px from bottom
+                    ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(egui::pos2(x, y)));
+                }
                 ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
             }
         }
@@ -57,19 +64,40 @@ impl eframe::App for DualisApp {
             return;
         }
 
+        // Apply a global dark visual theme temporarily
+        let mut visuals = egui::Visuals::dark();
+        visuals.widgets.inactive.bg_fill = egui::Color32::TRANSPARENT;
+        visuals.widgets.hovered.bg_fill = egui::Color32::from_white_alpha(10);
+        visuals.widgets.active.bg_fill = egui::Color32::from_white_alpha(20);
+        visuals.widgets.inactive.bg_stroke = egui::Stroke::NONE;
+        visuals.widgets.hovered.bg_stroke = egui::Stroke::NONE;
+        visuals.widgets.active.bg_stroke = egui::Stroke::NONE;
+        visuals.selection.bg_fill = egui::Color32::from_rgba_premultiplied(50, 200, 80, 100);
+        ctx.set_visuals(visuals);
+
         egui::CentralPanel::default()
-            .frame(egui::Frame::none().fill(egui::Color32::from_black_alpha(200)).rounding(10.0))
+            .frame(
+                egui::Frame::none()
+                    .fill(egui::Color32::from_rgba_premultiplied(20, 20, 25, 245))
+                    .rounding(20.0)
+                    .stroke(egui::Stroke::new(1.5_f32, egui::Color32::from_rgba_premultiplied(80, 255, 120, 180)))
+                    .inner_margin(egui::Margin::symmetric(20.0, 15.0))
+            )
             .show(ctx, |ui| {
-                ui.vertical_centered(|ui| {
-                    ui.add_space(20.0);
-                    ui.label(egui::RichText::new("Dualis Copilot").color(egui::Color32::GREEN).size(16.0));
+                ui.horizontal(|ui| {
+                    ui.label(egui::RichText::new("🟢 Dualis")
+                        .color(egui::Color32::from_rgb(100, 255, 120))
+                        .size(20.0)
+                        .strong());
                     
-                    ui.add_space(10.0);
+                    ui.add_space(15.0);
+                    
                     let response = ui.add(
                         egui::TextEdit::singleline(&mut self.command)
-                            .hint_text("Enter command...")
-                            .desired_width(350.0)
-                            .margin(egui::vec2(10.0, 10.0))
+                            .hint_text(egui::RichText::new("Ask the copilot anything...").color(egui::Color32::from_white_alpha(100)).size(18.0))
+                            .desired_width(ui.available_width())
+                            .text_color(egui::Color32::WHITE)
+                            .font(egui::FontId::proportional(18.0))
                     );
 
                     if self.is_visible && !response.has_focus() {
