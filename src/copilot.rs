@@ -1,13 +1,12 @@
 use tokio::sync::mpsc::Receiver;
-use windows::Win32::Foundation::{HWND, RECT};
+use windows::Win32::Foundation::{HWND, RECT, WPARAM, LPARAM, LRESULT};
 use windows::Win32::UI::WindowsAndMessaging::{
     CreateWindowExW, DefWindowProcW, RegisterClassW, ShowWindow, WNDCLASSW,
-    CW_USEDEFAULT, SW_SHOW, WS_POPUP, WS_VISIBLE,
+    SW_SHOW, WS_POPUP, WS_VISIBLE,
 };
 use windows::core::{w, PCWSTR};
-use std::ffi::c_void;
-use image::{ImageBuffer, Rgba};
-use enigo::{Enigo, MouseControllable, KeyboardControllable};
+use image::{ImageBuffer, Rgba, ImageFormat};
+use enigo::{Enigo, Mouse, Keyboard, Settings, Coordinate, Button, Direction};
 
 use crate::ai;
 
@@ -16,7 +15,7 @@ pub async fn run_copilot(mut rx: Receiver<String>) {
     let hwnd = create_offscreen_window();
     
     // Setup enigo for simulated input
-    let mut enigo = Enigo::new();
+    let mut enigo = Enigo::new(&Settings::default()).unwrap();
 
     while let Some(command) = rx.recv().await {
         println!("Copilot received command: {}", command);
@@ -46,6 +45,10 @@ pub async fn run_copilot(mut rx: Receiver<String>) {
     }
 }
 
+unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
+    unsafe { DefWindowProcW(hwnd, msg, wparam, lparam) }
+}
+
 fn create_offscreen_window() -> HWND {
     unsafe {
         let instance = windows::Win32::System::LibraryLoader::GetModuleHandleW(None).unwrap();
@@ -53,7 +56,7 @@ fn create_offscreen_window() -> HWND {
         let class_name = w!("DualisOffscreenClass");
         
         let wc = WNDCLASSW {
-            lpfnWndProc: Some(DefWindowProcW),
+            lpfnWndProc: Some(window_proc),
             hInstance: instance.into(),
             lpszClassName: class_name,
             ..Default::default()
@@ -72,9 +75,9 @@ fn create_offscreen_window() -> HWND {
             None,
             instance,
             None,
-        );
+        ).unwrap();
         
-        ShowWindow(hwnd, SW_SHOW);
+        let _ = ShowWindow(hwnd, SW_SHOW);
         hwnd
     }
 }
@@ -85,7 +88,7 @@ fn take_screenshot(hwnd: HWND) -> Vec<u8> {
     let img = ImageBuffer::<Rgba<u8>, _>::new(1920, 1080);
     let mut bytes: Vec<u8> = Vec::new();
     let mut cursor = std::io::Cursor::new(&mut bytes);
-    img.write_to(&mut cursor, image::ImageOutputFormat::Png).unwrap();
+    img.write_to(&mut cursor, ImageFormat::Png).unwrap();
     bytes
 }
 
@@ -99,12 +102,12 @@ fn execute_action(enigo: &mut Enigo, hwnd: HWND, action: serde_json::Value) {
             "click" => {
                 let x = action.get("x").and_then(|v| v.as_i64()).unwrap_or(0);
                 let y = action.get("y").and_then(|v| v.as_i64()).unwrap_or(0);
-                enigo.mouse_move_to((base_x + x) as i32, (base_y + y) as i32);
-                enigo.mouse_click(enigo::MouseButton::Left);
+                let _ = enigo.move_mouse((base_x + x) as i32, (base_y + y) as i32, Coordinate::Abs);
+                let _ = enigo.button(Button::Left, Direction::Click);
             }
             "type" => {
-                if let Some(text) = action.get("text").and_then(|v| v.as_str()) {
-                    enigo.key_sequence(text);
+                if let Some(txt) = action.get("text").and_then(|v| v.as_str()) {
+                    let _ = enigo.text(txt);
                 }
             }
             _ => {}

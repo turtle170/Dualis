@@ -7,7 +7,7 @@ pub fn run_gui(tx: Sender<String>, gui_rx: Receiver<()>) -> eframe::Result<()> {
         viewport: egui::ViewportBuilder::default()
             .with_decorations(false)
             .with_transparent(true)
-            .with_always_on_top(true)
+            .with_always_on_top()
             .with_inner_size([400.0, 100.0])
             .with_position(egui::pos2(500.0, 200.0)) // Center-ish
             .with_visible(false), // Hidden initially

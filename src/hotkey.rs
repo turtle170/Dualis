@@ -6,7 +6,7 @@ use windows::Win32::UI::WindowsAndMessaging::{GetMessageW, MSG};
 pub fn listen_hotkey(gui_tx: Sender<()>) {
     unsafe {
         // Register Alt+Space (id = 1)
-        if RegisterHotKey(HWND(0), 1, MOD_ALT, VK_SPACE.0 as u32).is_ok() {
+        if RegisterHotKey(HWND(std::ptr::null_mut()), 1, MOD_ALT, VK_SPACE.0 as u32).is_ok() {
             println!("Hotkey Alt+Space registered.");
         } else {
             eprintln!("Failed to register hotkey.");
@@ -14,7 +14,7 @@ pub fn listen_hotkey(gui_tx: Sender<()>) {
         }
 
         let mut msg = MSG::default();
-        while GetMessageW(&mut msg, HWND(0), 0, 0).into() {
+        while GetMessageW(&mut msg, HWND(std::ptr::null_mut()), 0, 0).into() {
             if msg.message == windows::Win32::UI::WindowsAndMessaging::WM_HOTKEY {
                 // Hotkey pressed
                 let _ = gui_tx.send(());
