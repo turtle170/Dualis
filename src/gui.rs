@@ -39,6 +39,11 @@ impl DualisApp {
 }
 
 impl eframe::App for DualisApp {
+    fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
+        // Completely transparent window background
+        [0.0, 0.0, 0.0, 0.0]
+    }
+
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Check if hotkey was pressed
         if let Ok(_) = self.gui_rx.try_recv() {
@@ -64,14 +69,20 @@ impl eframe::App for DualisApp {
             return;
         }
 
-        // Apply a global dark visual theme temporarily
+        // Apply a global dark visual theme
         let mut visuals = egui::Visuals::dark();
-        visuals.widgets.inactive.bg_fill = egui::Color32::TRANSPARENT;
-        visuals.widgets.hovered.bg_fill = egui::Color32::from_white_alpha(10);
-        visuals.widgets.active.bg_fill = egui::Color32::from_white_alpha(20);
-        visuals.widgets.inactive.bg_stroke = egui::Stroke::NONE;
-        visuals.widgets.hovered.bg_stroke = egui::Stroke::NONE;
-        visuals.widgets.active.bg_stroke = egui::Stroke::NONE;
+        visuals.widgets.inactive.bg_fill = egui::Color32::from_black_alpha(100);
+        visuals.widgets.inactive.rounding = egui::Rounding::same(8.0);
+        visuals.widgets.inactive.bg_stroke = egui::Stroke::new(1.0, egui::Color32::from_white_alpha(30));
+        
+        visuals.widgets.hovered.bg_fill = egui::Color32::from_black_alpha(150);
+        visuals.widgets.hovered.rounding = egui::Rounding::same(8.0);
+        visuals.widgets.hovered.bg_stroke = egui::Stroke::new(1.0, egui::Color32::from_white_alpha(50));
+        
+        // Use 'active' and 'noninteractive' fields as fallbacks
+        visuals.widgets.active.bg_fill = egui::Color32::from_black_alpha(200);
+        visuals.widgets.active.rounding = egui::Rounding::same(8.0);
+        visuals.widgets.active.bg_stroke = egui::Stroke::new(1.5, egui::Color32::from_rgba_premultiplied(100, 255, 120, 200));
         visuals.selection.bg_fill = egui::Color32::from_rgba_premultiplied(50, 200, 80, 100);
         ctx.set_visuals(visuals);
 
@@ -94,10 +105,11 @@ impl eframe::App for DualisApp {
                     
                     let response = ui.add(
                         egui::TextEdit::singleline(&mut self.command)
-                            .hint_text(egui::RichText::new("Ask the copilot anything...").color(egui::Color32::from_white_alpha(100)).size(18.0))
+                            .hint_text(egui::RichText::new("Ask the copilot anything...").color(egui::Color32::from_white_alpha(150)).size(16.0))
                             .desired_width(ui.available_width())
                             .text_color(egui::Color32::WHITE)
-                            .font(egui::FontId::proportional(18.0))
+                            .margin(egui::vec2(12.0, 10.0))
+                            .font(egui::FontId::proportional(16.0))
                     );
 
                     if self.is_visible && !response.has_focus() {
